@@ -11,35 +11,52 @@ class BookmarkFilter(django_filters.FilterSet):
     Filter class for Bookmark model.
     Provides advanced filtering capabilities for bookmarks.
     """
+
     # Date filters
-    created_after = django_filters.DateTimeFilter(field_name='created_at', lookup_expr='gte')
-    created_before = django_filters.DateTimeFilter(field_name='created_at', lookup_expr='lte')
-    updated_after = django_filters.DateTimeFilter(field_name='updated_at', lookup_expr='gte')
-    updated_before = django_filters.DateTimeFilter(field_name='updated_at', lookup_expr='lte')
+    created_after = django_filters.DateTimeFilter(
+        field_name="created_at", lookup_expr="gte"
+    )
+    created_before = django_filters.DateTimeFilter(
+        field_name="created_at", lookup_expr="lte"
+    )
+    updated_after = django_filters.DateTimeFilter(
+        field_name="updated_at", lookup_expr="gte"
+    )
+    updated_before = django_filters.DateTimeFilter(
+        field_name="updated_at", lookup_expr="lte"
+    )
 
     # Text search filters
-    title_contains = django_filters.CharFilter(field_name='title', lookup_expr='icontains')
-    url_contains = django_filters.CharFilter(field_name='url', lookup_expr='icontains')
-    description_contains = django_filters.CharFilter(field_name='description', lookup_expr='icontains')
-    notes_contains = django_filters.CharFilter(field_name='notes', lookup_expr='icontains')
+    title_contains = django_filters.CharFilter(
+        field_name="title", lookup_expr="icontains"
+    )
+    url_contains = django_filters.CharFilter(field_name="url", lookup_expr="icontains")
+    description_contains = django_filters.CharFilter(
+        field_name="description", lookup_expr="icontains"
+    )
+    notes_contains = django_filters.CharFilter(
+        field_name="notes", lookup_expr="icontains"
+    )
 
     # Tag filters
-    has_tags = django_filters.BooleanFilter(method='filter_has_tags')
-    has_tag_id = django_filters.NumberFilter(field_name='bookmark_tags__tag__id')
-    has_tag_name = django_filters.CharFilter(field_name='bookmark_tags__tag__name', lookup_expr='iexact')
+    has_tags = django_filters.BooleanFilter(method="filter_has_tags")
+    has_tag_id = django_filters.NumberFilter(field_name="bookmark_tags__tag__id")
+    has_tag_name = django_filters.CharFilter(
+        field_name="bookmark_tags__tag__name", lookup_expr="iexact"
+    )
 
     # Advanced search filter (searches in multiple fields)
-    search = django_filters.CharFilter(method='filter_search')
+    search = django_filters.CharFilter(method="filter_search")
 
     # Status filters
-    is_favorite = django_filters.BooleanFilter(field_name='is_favorite')
-    is_pinned = django_filters.BooleanFilter(field_name='is_pinned')
+    is_favorite = django_filters.BooleanFilter(field_name="is_favorite")
+    is_pinned = django_filters.BooleanFilter(field_name="is_pinned")
 
     class Meta:
         model = Bookmark
         fields = {
-            'is_favorite': ['exact'],
-            'is_pinned': ['exact'],
+            "is_favorite": ["exact"],
+            "is_pinned": ["exact"],
         }
 
     def filter_has_tags(self, queryset, name, value):
@@ -63,11 +80,11 @@ class BookmarkFilter(django_filters.FilterSet):
 
         for term in terms:
             query |= (
-                    Q(title__icontains=term) |
-                    Q(description__icontains=term) |
-                    Q(url__icontains=term) |
-                    Q(notes__icontains=term) |
-                    Q(bookmark_tags__tag__name__icontains=term)
+                Q(title__icontains=term)
+                | Q(description__icontains=term)
+                | Q(url__icontains=term)
+                | Q(notes__icontains=term)
+                | Q(bookmark_tags__tag__name__icontains=term)
             )
 
         return queryset.filter(query).distinct()

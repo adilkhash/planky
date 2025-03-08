@@ -43,15 +43,10 @@ class UserSerializer(serializers.ModelSerializer):
 class BookmarkSerializer(serializers.ModelSerializer):
     tags = serializers.SerializerMethodField()
     tag_ids = serializers.PrimaryKeyRelatedField(
-        queryset=Tag.objects.all(),
-        many=True,
-        write_only=True,
-        required=False
+        queryset=Tag.objects.all(), many=True, write_only=True, required=False
     )
     tag_names = serializers.ListField(
-        child=serializers.CharField(max_length=50),
-        write_only=True,
-        required=False
+        child=serializers.CharField(max_length=50), write_only=True, required=False
     )
     url = serializers.URLField(max_length=2000)
     favicon_url = serializers.URLField(max_length=2000, required=False, allow_null=True)
@@ -60,15 +55,25 @@ class BookmarkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Bookmark
         fields = [
-            'id', 'url', 'title', 'description', 'notes', 'favicon_url',
-            'created_at', 'updated_at', 'is_favorite', 'is_pinned',
-            'tags', 'tag_ids', 'tag_names'
+            "id",
+            "url",
+            "title",
+            "description",
+            "notes",
+            "favicon_url",
+            "created_at",
+            "updated_at",
+            "is_favorite",
+            "is_pinned",
+            "tags",
+            "tag_ids",
+            "tag_names",
         ]
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ["id", "created_at", "updated_at"]
 
     def get_tags(self, obj):
         """Get tags for a bookmark."""
-        bookmark_tags = BookmarkTag.objects.select_related('tag').filter(bookmark=obj)
+        bookmark_tags = BookmarkTag.objects.select_related("tag").filter(bookmark=obj)
         tags = [bookmark_tag.tag for bookmark_tag in bookmark_tags]
         return TagMinimalSerializer(tags, many=True).data
 
@@ -99,7 +104,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
 
     def _process_tags(self, bookmark, tag_ids=None, tag_names=None):
         """Process tag_ids and tag_names to set bookmark tags."""
-        user = self.context['request'].user
+        user = self.context["request"].user
 
         # Clear existing bookmark tags
         BookmarkTag.objects.filter(bookmark=bookmark).delete()
@@ -107,8 +112,9 @@ class BookmarkSerializer(serializers.ModelSerializer):
         # Add tags from tag_ids
         if tag_ids:
             # Ensure the tags belong to the user
-            valid_tag_ids = Tag.objects.filter(id__in=[tag.id for tag in tag_ids], user=user).values_list('id',
-                                                                                                          flat=True)
+            valid_tag_ids = Tag.objects.filter(
+                id__in=[tag.id for tag in tag_ids], user=user
+            ).values_list("id", flat=True)
             for tag_id in valid_tag_ids:
                 BookmarkTag.objects.create(bookmark=bookmark, tag_id=tag_id)
 
@@ -121,9 +127,7 @@ class BookmarkSerializer(serializers.ModelSerializer):
 
                 # Get or create tag
                 tag, created = Tag.objects.get_or_create(
-                    user=user,
-                    name=tag_name,
-                    defaults={'is_ai_generated': False}
+                    user=user, name=tag_name, defaults={"is_ai_generated": False}
                 )
 
                 # Create bookmark tag if it doesn't exist
@@ -132,8 +136,8 @@ class BookmarkSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def create(self, validated_data):
         """Create a bookmark with tags."""
-        tag_ids = validated_data.pop('tag_ids', [])
-        tag_names = validated_data.pop('tag_names', [])
+        tag_ids = validated_data.pop("tag_ids", [])
+        tag_names = validated_data.pop("tag_names", [])
 
         bookmark = super().create(validated_data)
         self._process_tags(bookmark, tag_ids, tag_names)
@@ -143,8 +147,8 @@ class BookmarkSerializer(serializers.ModelSerializer):
     @transaction.atomic
     def update(self, instance, validated_data):
         """Update a bookmark with tags."""
-        tag_ids = validated_data.pop('tag_ids', None)
-        tag_names = validated_data.pop('tag_names', None)
+        tag_ids = validated_data.pop("tag_ids", None)
+        tag_names = validated_data.pop("tag_names", None)
 
         bookmark = super().update(instance, validated_data)
 

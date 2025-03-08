@@ -42,7 +42,9 @@ class RegistrationSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(
-        max_length=128, write_only=True, style={"input_type": "password"},
+        max_length=128,
+        write_only=True,
+        style={"input_type": "password"},
     )
     access = serializers.CharField(read_only=True)
     refresh = serializers.CharField(read_only=True)
