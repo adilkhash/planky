@@ -7,19 +7,24 @@ const PrivateRoute: React.FC = () => {
   const location = useLocation();
 
   if (loading) {
-    // You can return a loading spinner or component here
+    // Show a loading spinner while checking authentication status
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600"></div>
+      <div className="flex items-center justify-center min-h-screen bg-gray-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
+        </div>
       </div>
     );
   }
 
-  return isAuthenticated ? (
-    <Outlet />
-  ) : (
-    <Navigate to="/login" state={{ from: location }} replace />
-  );
+  // If not authenticated, redirect to login page with the return URL
+  if (!isAuthenticated) {
+    return <Navigate to="/login" state={{ from: location }} replace />;
+  }
+
+  // If authenticated, render the child routes
+  return <Outlet />;
 };
 
 export default PrivateRoute;

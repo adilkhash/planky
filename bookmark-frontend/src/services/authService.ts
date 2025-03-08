@@ -28,6 +28,11 @@ interface UserResponse {
   auth_provider: string;
 }
 
+// storage keys
+const ACCESS_TOKEN_KEY = 'accessToken';
+const REFRESH_TOKEN_KEY = 'refreshToken';
+const REMEMBER_ME_KEY = 'rememberMe';
+
 export const authService = {
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
     const response = await api.post('/auth/login/', credentials);
@@ -53,25 +58,66 @@ export const authService = {
     return response.data;
   },
 
-  saveTokens(tokens: AuthResponse): void {
-    localStorage.setItem('accessToken', tokens.access);
-    localStorage.setItem('refreshToken', tokens.refresh);
+  saveTokens(tokens: AuthResponse, rememberMe = false): void {
+    const storage = rememberMe ? localStorage : sessionStorage;
+
+    // Save tokens in the appropriate storage
+    storage.setItem(ACCESS_TOKEN_KEY, tokens.access);
+    storage.setItem(REFRESH_TOKEN_KEY, tokens.refresh);
+
+    // Save the remember me preference
+    localStorage.setItem(REMEMBER_ME_KEY, rememberMe.toString());
   },
 
   clearTokens(): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
+    // Clear from both storage types to be safe
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+    sessionStorage.removeItem(REFRESH_TOKEN_KEY);
+
+    // Keep the remember me preference
   },
 
   getAccessToken(): string | null {
-    return localStorage.getItem('accessToken');
+    // Check if token is in localStorage (remember me was true)
+    const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+
+    // Try to get from the appropriate storage first
+    const storage = rememberMe ? localStorage : sessionStorage;
+    let token = storage.getItem(ACCESS_TOKEN_KEY);
+
+    // If not found in the expected storage, try the other one
+    if (!token) {
+      const altStorage = rememberMe ? sessionStorage : localStorage;
+      token = altStorage.getItem(ACCESS_TOKEN_KEY);
+    }
+
+    return token;
   },
 
   getRefreshToken(): string | null {
-    return localStorage.getItem('refreshToken');
+    // Check if token is in localStorage (remember me was true)
+    const rememberMe = localStorage.getItem(REMEMBER_ME_KEY) === 'true';
+
+    // Try to get from the appropriate storage first
+    const storage = rememberMe ? localStorage : sessionStorage;
+    let token = storage.getItem(REFRESH_TOKEN_KEY);
+
+    // If not found in the expected storage, try the other one
+    if (!token) {
+      const altStorage = rememberMe ? sessionStorage : localStorage;
+      token = altStorage.getItem(REFRESH_TOKEN_KEY);
+    }
+
+    return token;
   },
 
   isAuthenticated(): boolean {
     return !!this.getAccessToken();
+  },
+
+  getRememberMePreference(): boolean {
+    return localStorage.getItem(REMEMBER_ME_KEY) === 'true';
   },
 };

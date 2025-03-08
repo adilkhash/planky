@@ -1,14 +1,13 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import ProfileDropdown from './ProfileDropdown';
 import {
   BookmarkIcon,
   HomeIcon,
   TagIcon,
-  UserCircleIcon,
   Bars3Icon,
   XMarkIcon,
-  ArrowRightStartOnRectangleIcon
 } from '@heroicons/react/24/outline';
 
 interface LayoutProps {
@@ -16,17 +15,11 @@ interface LayoutProps {
 }
 
 const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const { isAuthenticated, logout, user } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
   return (
-    <div className="min-h-screen flex flex-col">
+    <div className="min-h-screen flex flex-col bg-gray-50">
       {/* Header */}
       <header className="bg-white shadow">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
@@ -51,23 +44,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
                   <TagIcon className="h-5 w-5" />
                   <span>Tags</span>
                 </Link>
-                <div className="relative group">
-                  <button className="text-gray-600 hover:text-primary-600 flex items-center space-x-1">
-                    <UserCircleIcon className="h-5 w-5" />
-                    <span>{user?.username || user?.email}</span>
-                  </button>
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-10 hidden group-hover:block">
-                    <Link to="/profile" className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                      Profile
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Logout
-                    </button>
-                  </div>
-                </div>
+                <ProfileDropdown />
               </>
             ) : (
               <>
@@ -81,6 +58,8 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
           <button
             className="md:hidden text-gray-600"
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            aria-expanded={mobileMenuOpen}
+            aria-label="Toggle menu"
           >
             {mobileMenuOpen ? (
               <XMarkIcon className="h-6 w-6" />
@@ -92,38 +71,54 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
 
         {/* Mobile Navigation */}
         {mobileMenuOpen && (
-          <nav className="md:hidden border-t border-gray-200 py-2 px-4">
+          <nav className="md:hidden border-t border-gray-200 py-2 px-4 bg-white shadow-lg">
             <div className="flex flex-col space-y-3">
               {isAuthenticated ? (
                 <>
-                  <Link to="/" className="text-gray-600 hover:text-primary-600 flex items-center space-x-2">
+                  <Link
+                    to="/"
+                    className="text-gray-600 hover:text-primary-600 flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <HomeIcon className="h-5 w-5" />
                     <span>Home</span>
                   </Link>
-                  <Link to="/bookmarks" className="text-gray-600 hover:text-primary-600 flex items-center space-x-2">
+                  <Link
+                    to="/bookmarks"
+                    className="text-gray-600 hover:text-primary-600 flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <BookmarkIcon className="h-5 w-5" />
                     <span>Bookmarks</span>
                   </Link>
-                  <Link to="/tags" className="text-gray-600 hover:text-primary-600 flex items-center space-x-2">
+                  <Link
+                    to="/tags"
+                    className="text-gray-600 hover:text-primary-600 flex items-center space-x-2 p-2 rounded-md hover:bg-gray-100"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
                     <TagIcon className="h-5 w-5" />
                     <span>Tags</span>
                   </Link>
-                  <Link to="/profile" className="text-gray-600 hover:text-primary-600 flex items-center space-x-2">
-                    <UserCircleIcon className="h-5 w-5" />
-                    <span>Profile</span>
-                  </Link>
-                  <button
-                    onClick={handleLogout}
-                    className="text-gray-600 hover:text-primary-600 flex items-center space-x-2"
-                  >
-                    <ArrowRightStartOnRectangleIcon className="h-5 w-5" />
-                    <span>Logout</span>
-                  </button>
+                  <div className="border-t border-gray-200 my-2 pt-2">
+                    <ProfileDropdown />
+                  </div>
                 </>
               ) : (
                 <>
-                  <Link to="/login" className="text-gray-600 hover:text-primary-600">Login</Link>
-                  <Link to="/register" className="text-gray-600 hover:text-primary-600">Register</Link>
+                  <Link
+                    to="/login"
+                    className="text-gray-600 hover:text-primary-600 p-2 rounded-md hover:bg-gray-100"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="bg-primary-600 text-white p-2 rounded-md hover:bg-primary-700"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Register
+                  </Link>
                 </>
               )}
             </div>
@@ -137,7 +132,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       </main>
 
       {/* Footer */}
-      <footer className="bg-gray-100 py-4">
+      <footer className="bg-white py-4 mt-8 border-t border-gray-200">
         <div className="container mx-auto px-4 text-center text-gray-600">
           <p>&copy; {new Date().getFullYear()} Planky. All rights reserved.</p>
         </div>

@@ -5,6 +5,7 @@ import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import BookmarksPage from './pages/BookmarksPage';
+import BookmarkDetailPage from './pages/BookmarkDetailPage';
 
 function App() {
   return (
@@ -19,7 +20,8 @@ function App() {
           {/* Protected routes */}
           <Route element={<PrivateRoute />}>
             <Route path="/bookmarks" element={<BookmarksPage />} />
-            {/* Add more protected routes as needed */}
+            <Route path="/bookmarks/:id" element={<BookmarkDetailPage />} />
+            {/* Add more protected routes here */}
           </Route>
 
           {/* Fallback route */}

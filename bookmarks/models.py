@@ -83,48 +83,42 @@ class Bookmark(models.Model):
     url = models.URLField(max_length=2000)
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
+    notes = models.TextField(blank=True, null=True)  # Added notes field
     favicon_url = models.URLField(max_length=2000, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="bookmarks",
-        db_index=True,
-    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='bookmarks',
+                             db_index=True)
     is_favorite = models.BooleanField(default=False, db_index=True)
     is_pinned = models.BooleanField(default=False, db_index=True)
-    tags = models.ManyToManyField(
-        "Tag", through="BookmarkTag", related_name="bookmarks"
-    )
+    tags = models.ManyToManyField('Tag', through='BookmarkTag', related_name='bookmarks')
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ['-created_at']
         indexes = [
-            models.Index(fields=["user", "-created_at"]),
-            models.Index(fields=["user", "is_favorite"]),
-            models.Index(fields=["user", "is_pinned"]),
+            models.Index(fields=['user', '-created_at']),
+            models.Index(fields=['user', 'is_favorite']),
+            models.Index(fields=['user', 'is_pinned']),
         ]
 
     def __str__(self):
         return self.title
 
     def clean(self):
+        """Validate the URL format"""
         # Validate URL format
         validator = URLValidator()
         try:
             validator(self.url)
         except ValidationError:
-            raise ValidationError({"url": "Enter a valid URL."})
+            raise ValidationError({'url': 'Enter a valid URL.'})
 
         # If favicon_url is provided, validate it too
         if self.favicon_url:
             try:
                 validator(self.favicon_url)
             except ValidationError:
-                raise ValidationError(
-                    {"favicon_url": "Enter a valid URL for the favicon."}
-                )
+                raise ValidationError({'favicon_url': 'Enter a valid URL for the favicon.'})
 
         return super().clean()
 

@@ -10,6 +10,7 @@ export interface Bookmark {
   url: string;
   title: string;
   description: string | null;
+  notes: string | null;  // Added notes field
   favicon_url: string | null;
   created_at: string;
   updated_at: string;
@@ -22,6 +23,7 @@ export interface BookmarkCreateData {
   url: string;
   title: string;
   description?: string;
+  notes?: string;  // Added notes field
   favicon_url?: string;
   is_favorite?: boolean;
   is_pinned?: boolean;
@@ -33,6 +35,7 @@ export interface BookmarkUpdateData {
   url?: string;
   title?: string;
   description?: string;
+  notes?: string;  // Added notes field
   favicon_url?: string;
   is_favorite?: boolean;
   is_pinned?: boolean;
