@@ -6,6 +6,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import BookmarksPage from './pages/BookmarksPage';
 import BookmarkDetailPage from './pages/BookmarkDetailPage';
+import TagsPage from './pages/TagsPage';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route element={<PrivateRoute />}>
             <Route path="/bookmarks" element={<BookmarksPage />} />
             <Route path="/bookmarks/:id" element={<BookmarkDetailPage />} />
+            <Route path="/tags/" element={<TagsPage />} />
             {/* Add more protected routes here */}
           </Route>
 

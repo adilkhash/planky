@@ -49,11 +49,11 @@ const LoginPage: React.FC = () => {
     onSubmit: async (values) => {
       clearError();
       try {
-        await login({
-          email: values.email,
-          password: values.password,
+        await login(
+          values.email,
+          values.password,
           rememberMe
-        });
+        );
         // redirect handled in useEffect
       } catch (err) {
         // Error is handled in AuthContext

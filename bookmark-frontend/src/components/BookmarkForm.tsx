@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
 import { Bookmark } from '../services/bookmarkService';
-import { Tag, tagService } from '../services/tagService';
-import { XMarkIcon, PlusIcon } from '@heroicons/react/24/outline';
+import { Tag } from '../services/tagService';
+import EnhancedTagInput from './EnhancedTagInput';
 
 interface BookmarkFormProps {
   initialData?: Partial<Bookmark>;
@@ -16,12 +16,12 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
   onSubmit,
   isSubmitting,
 }) => {
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  const [tagInput, setTagInput] = useState('');
-  const [tagError, setTagError] = useState<string | null>(null);
   const [fetchingMetadata, setFetchingMetadata] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [notesCharCount, setNotesCharCount] = useState(initialData?.notes?.length || 0);
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(
+    initialData?.tags || []
+  );
 
   const formik = useFormik({
     initialValues: {
@@ -47,11 +47,11 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
     onSubmit: async (values) => {
       // Get the current tag IDs and tag names
       const tagIds = selectedTags
-        .filter(tag => tag.id !== undefined)
+        .filter(tag => tag.id !== undefined && tag.id > 0)
         .map(tag => tag.id!);
 
       const tagNames = selectedTags
-        .filter(tag => tag.id === undefined)
+        .filter(tag => tag.id === undefined || tag.id < 0)
         .map(tag => tag.name);
 
       try {
@@ -71,25 +71,6 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
   useEffect(() => {
     setNotesCharCount(formik.values.notes.length);
   }, [formik.values.notes]);
-
-  // Set up selected tags state
-  const [selectedTags, setSelectedTags] = useState<Tag[]>(
-    initialData?.tags || []
-  );
-
-  // Fetch available tags
-  useEffect(() => {
-    const fetchTags = async () => {
-      try {
-        const tags = await tagService.getTags();
-        setAvailableTags(tags);
-      } catch (error) {
-        console.error('Error fetching tags:', error);
-      }
-    };
-
-    fetchTags();
-  }, []);
 
   // Function to fetch metadata from URL
   const fetchMetadata = async () => {
@@ -135,49 +116,9 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
     }
   };
 
-  // Handle adding a new tag
-  const handleAddTag = () => {
-    const tagName = tagInput.trim().toLowerCase();
-
-    if (!tagName) {
-      return;
-    }
-
-    // Check if tag already exists in selected tags
-    if (selectedTags.some(tag => tag.name.toLowerCase() === tagName)) {
-      setTagError('This tag is already added');
-      return;
-    }
-
-    // Check if tag exists in available tags
-    const existingTag = availableTags.find(tag =>
-      tag.name.toLowerCase() === tagName
-    );
-
-    if (existingTag) {
-      setSelectedTags([...selectedTags, existingTag]);
-    } else {
-      // Create a new tag (will be created on the server when form is submitted)
-      setSelectedTags([...selectedTags, { id: undefined, name: tagName }]);
-    }
-
-    setTagInput('');
-    setTagError(null);
-  };
-
-  // Handle removing a tag
-  const handleRemoveTag = (tagToRemove: Tag) => {
-    setSelectedTags(selectedTags.filter(tag =>
-      tag.id ? tag.id !== tagToRemove.id : tag.name !== tagToRemove.name
-    ));
-  };
-
-  // Handle tag input keydown (add tag on Enter)
-  const handleTagKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleAddTag();
-    }
+  // Handle tag changes
+  const handleTagsChange = (newTags: Tag[]) => {
+    setSelectedTags(newTags);
   };
 
   return (
@@ -298,52 +239,11 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
         <label className="block text-sm font-medium text-gray-700 mb-1">
           Tags
         </label>
-        <div className="flex flex-wrap gap-2 mb-2">
-          {selectedTags.map((tag, index) => (
-            <div
-              key={tag.id || `new-tag-${index}`}
-              className="inline-flex items-center bg-primary-100 text-primary-800 rounded-full px-2.5 py-0.5 text-sm"
-            >
-              <span className="max-w-xs truncate">{tag.name}</span>
-              <button
-                type="button"
-                onClick={() => handleRemoveTag(tag)}
-                className="ml-1 text-primary-700 hover:text-primary-900 focus:outline-none"
-                aria-label={`Remove tag ${tag.name}`}
-              >
-                <XMarkIcon className="h-4 w-4" />
-              </button>
-            </div>
-          ))}
-        </div>
-        <div className="flex">
-          <input
-            type="text"
-            value={tagInput}
-            onChange={(e) => {
-              setTagInput(e.target.value);
-              setTagError(null);
-            }}
-            onKeyDown={handleTagKeyDown}
-            placeholder="Add a tag"
-            className="input flex-grow"
-            disabled={isSubmitting}
-          />
-          <button
-            type="button"
-            onClick={handleAddTag}
-            disabled={!tagInput.trim() || isSubmitting}
-            className="ml-2 px-3 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300 disabled:opacity-50 flex items-center"
-          >
-            <PlusIcon className="h-5 w-5" />
-          </button>
-        </div>
-        {tagError && (
-          <div className="text-red-500 text-sm mt-1">{tagError}</div>
-        )}
-        <p className="text-xs text-gray-500 mt-1">
-          Press Enter to add a tag or click the plus button
-        </p>
+        <EnhancedTagInput
+          selectedTags={selectedTags}
+          onChange={handleTagsChange}
+          disabled={isSubmitting}
+        />
       </div>
 
       {/* Favorite and Pin Options */}

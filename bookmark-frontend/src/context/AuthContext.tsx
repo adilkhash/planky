@@ -17,6 +17,7 @@ interface AuthContextType {
   login: (email: string, password: string, remember?: boolean) => Promise<void>;
   register: (email: string, username: string, password: string, password_confirm: string) => Promise<void>;
   logout: () => void;
+  clearError: () => void;
 }
 
 // Create the context with a default value
@@ -28,6 +29,7 @@ const AuthContext = createContext<AuthContextType>({
   login: async () => {},
   register: async () => {},
   logout: () => {},
+  clearError: () => {},
 });
 
 // Create a provider component
@@ -103,6 +105,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
     setIsAuthenticated(false);
   };
 
+  const clearError = () => {
+    setError(null)
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -113,6 +119,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
         login,
         register,
         logout,
+        clearError,
       }}
     >
       {children}

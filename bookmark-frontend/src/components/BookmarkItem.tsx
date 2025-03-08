@@ -42,8 +42,7 @@ const BookmarkItem: React.FC<BookmarkItemProps> = ({
   // Extract domain from URL for display
   const getDomain = (url: string) => {
     try {
-      const domain = new URL(url).hostname;
-      return domain;
+      return new URL(url).hostname;
     } catch (e) {
       return url;
     }
