@@ -1,10 +1,11 @@
-from rest_framework import viewsets, filters, permissions, status
+from rest_framework import viewsets, filters, permissions
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
 from django.contrib.auth import get_user_model
-from .models import Bookmark, Tag, BookmarkTag
+from django.db.models import Count
+from .models import Bookmark, Tag
 from .serializers import BookmarkSerializer, UserSerializer
 from .permissions import IsOwner
 from .filters import BookmarkFilter
@@ -16,54 +17,30 @@ class BookmarkViewSet(viewsets.ModelViewSet):
     """
     ViewSet for managing bookmarks.
 
-    list:
-        Get a paginated list of all bookmarks belonging to the current user.
-
-    create:
-        Create a new bookmark.
-
-    retrieve:
-        Get details of a specific bookmark.
-
-    update:
-        Update all fields of a specific bookmark.
-
-    partial_update:
-        Update specific fields of a bookmark.
-
-    destroy:
-        Delete a bookmark.
+    Supports:
+    - Full CRUD operations
+    - Search by title, description, URL, and notes
+    - Filter by tags (single or multiple)
+    - Filter by favorite/pinned status
+    - Date range filtering
+    - Sorting by various fields
     """
-
     serializer_class = BookmarkSerializer
     permission_classes = [IsAuthenticated, IsOwner]
-    filter_backends = [
-        DjangoFilterBackend,
-        filters.SearchFilter,
-        filters.OrderingFilter,
-    ]
+    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
     filterset_class = BookmarkFilter
-    search_fields = ["title", "description", "url"]
-    ordering_fields = ["created_at", "updated_at", "title"]
-    ordering = ["-created_at"]  # Default ordering
+    search_fields = ['title', 'description', 'url', 'notes']
+    ordering_fields = ['created_at', 'updated_at', 'title']
+    ordering = ['-created_at']  # Default ordering
 
     def get_queryset(self):
         """
-        Get the list of bookmarks for the current user.
+        Get the list of bookmarks for the current user with optimized queries.
         """
-        queryset = Bookmark.objects.filter(user=self.request.user)
-
-        # Filter by tag_id if provided
-        tag_id = self.request.query_params.get("tag_id", None)
-        if tag_id:
-            queryset = queryset.filter(bookmark_tags__tag_id=tag_id)
-
-        # Filter by tag_name if provided
-        tag_name = self.request.query_params.get("tag_name", None)
-        if tag_name:
-            queryset = queryset.filter(bookmark_tags__tag__name__iexact=tag_name)
-
-        return queryset
+        # Use select_related and prefetch_related for performance
+        return Bookmark.objects.filter(user=self.request.user) \
+            .select_related('user') \
+            .prefetch_related('bookmark_tags', 'bookmark_tags__tag')
 
     def perform_create(self, serializer):
         """
@@ -71,11 +48,15 @@ class BookmarkViewSet(viewsets.ModelViewSet):
         """
         serializer.save(user=self.request.user)
 
-    def list(self, request, *args, **kwargs):
+    @action(detail=False, methods=['get'])
+    def favorites(self, request):
         """
-        Get a paginated list of bookmarks with optional filtering.
+        Get all favorite bookmarks.
+
+        Returns a paginated list of bookmarks where is_favorite is True.
+        Any additional filtering parameters can be applied.
         """
-        queryset = self.filter_queryset(self.get_queryset())
+        queryset = self.filter_queryset(self.get_queryset().filter(is_favorite=True))
         page = self.paginate_queryset(queryset)
 
         if page is not None:
@@ -85,196 +66,85 @@ class BookmarkViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    def create(self, request, *args, **kwargs):
-        """
-        Create a new bookmark.
-        """
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-        headers = self.get_success_headers(serializer.data)
-        return Response(
-            serializer.data, status=status.HTTP_201_CREATED, headers=headers
-        )
-
-    def retrieve(self, request, *args, **kwargs):
-        """
-        Get details of a specific bookmark.
-        """
-        instance = self.get_object()
-        serializer = self.get_serializer(instance)
-        return Response(serializer.data)
-
-    def update(self, request, *args, **kwargs):
-        """
-        Update all fields of a specific bookmark.
-        """
-        partial = kwargs.pop("partial", False)
-        instance = self.get_object()
-        serializer = self.get_serializer(instance, data=request.data, partial=partial)
-        serializer.is_valid(raise_exception=True)
-        self.perform_update(serializer)
-
-        if getattr(instance, "_prefetched_objects_cache", None):
-            # If 'prefetch_related' has been applied to a queryset, we need to
-            # forcibly invalidate the prefetch cache on the instance.
-            instance._prefetched_objects_cache = {}
-
-        return Response(serializer.data)
-
-    def destroy(self, request, *args, **kwargs):
-        """
-        Delete a bookmark.
-        """
-        instance = self.get_object()
-        self.perform_destroy(instance)
-        return Response(status=status.HTTP_204_NO_CONTENT)
-
-    @action(detail=False, methods=["get"])
-    def favorites(self, request):
-        """
-        Get all favorite bookmarks.
-        """
-        bookmarks = self.get_queryset().filter(is_favorite=True)
-        page = self.paginate_queryset(bookmarks)
-
-        if page is not None:
-            serializer = self.get_serializer(page, many=True)
-            return self.get_paginated_response(serializer.data)
-
-        serializer = self.get_serializer(bookmarks, many=True)
-        return Response(serializer.data)
-
-    @action(detail=False, methods=["get"])
+    @action(detail=False, methods=['get'])
     def pinned(self, request):
         """
         Get all pinned bookmarks.
+
+        Returns a paginated list of bookmarks where is_pinned is True.
+        Any additional filtering parameters can be applied.
         """
-        bookmarks = self.get_queryset().filter(is_pinned=True)
-        page = self.paginate_queryset(bookmarks)
+        queryset = self.filter_queryset(self.get_queryset().filter(is_pinned=True))
+        page = self.paginate_queryset(queryset)
 
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
-        serializer = self.get_serializer(bookmarks, many=True)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
-    @action(detail=True, methods=["post"])
-    def add_tag(self, request, pk=None):
+    @action(detail=False, methods=['get'])
+    def search_suggestions(self, request):
         """
-        Add a tag to a bookmark.
+        Get search suggestions based on bookmark titles.
 
-        Can add by tag_id or tag_name. If using tag_name and the tag
-        doesn't exist, it will be created.
+        This endpoint is optimized for typeahead/autocomplete functionality.
+        It returns a list of titles that match the query parameter 'q'.
         """
-        bookmark = self.get_object()
+        query = request.query_params.get('q', '')
+        if not query or len(query) < 2:
+            return Response([])
 
-        # Check if tag_id is provided
-        tag_id = request.data.get("tag_id")
-        tag_name = request.data.get("tag_name")
+        # Find matching bookmark titles, limit to 10 results
+        suggestions = Bookmark.objects.filter(
+            user=request.user,
+            title__icontains=query
+        ).values_list('title', flat=True).distinct()[:10]
 
-        if not tag_id and not tag_name:
-            return Response(
-                {"detail": "Either tag_id or tag_name must be provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        return Response(list(suggestions))
 
-        if tag_id:
-            try:
-                # Ensure the tag belongs to the user
-                tag = Tag.objects.get(id=tag_id, user=request.user)
-            except Tag.DoesNotExist:
-                return Response(
-                    {"detail": "Tag not found"}, status=status.HTTP_404_NOT_FOUND
-                )
-        else:
-            # Normalize tag name
-            tag_name = tag_name.lower().strip()
-            if not tag_name:
-                return Response(
-                    {"detail": "Tag name cannot be empty"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-
-            # Get or create tag
-            tag, created = Tag.objects.get_or_create(
-                user=request.user, name=tag_name, defaults={"is_ai_generated": False}
-            )
-
-        # Check if the bookmark already has this tag
-        if BookmarkTag.objects.filter(bookmark=bookmark, tag=tag).exists():
-            return Response(
-                {"detail": "This bookmark already has this tag"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Create bookmark tag
-        BookmarkTag.objects.create(bookmark=bookmark, tag=tag)
-
-        # Return updated bookmark
-        serializer = self.get_serializer(bookmark)
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["post"])
-    def remove_tag(self, request, pk=None):
+    @action(detail=False, methods=['get'])
+    def stats(self, request):
         """
-        Remove a tag from a bookmark.
+        Get statistics about the user's bookmarks.
+
+        Returns:
+        - Total bookmark count
+        - Favorite bookmark count
+        - Pinned bookmark count
+        - Tag count
+        - Recently used tags
         """
-        bookmark = self.get_object()
+        bookmarks = self.get_queryset()
 
-        # Check if tag_id is provided
-        tag_id = request.data.get("tag_id")
-        tag_name = request.data.get("tag_name")
+        # Get tag stats
+        user_tags = Tag.objects.filter(user=request.user)
+        recent_tags = Tag.objects.filter(
+            bookmark_tags__bookmark__user=request.user
+        ).annotate(
+            usage_count=Count('bookmark_tags')
+        ).order_by('-usage_count')[:5]
 
-        if not tag_id and not tag_name:
-            return Response(
-                {"detail": "Either tag_id or tag_name must be provided"},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
+        stats = {
+            'total_bookmarks': bookmarks.count(),
+            'favorite_bookmarks': bookmarks.filter(is_favorite=True).count(),
+            'pinned_bookmarks': bookmarks.filter(is_pinned=True).count(),
+            'total_tags': user_tags.count(),
+            'recent_tags': [
+                {
+                    'id': tag.id,
+                    'name': tag.name,
+                    'count': tag.usage_count
+                } for tag in recent_tags
+            ]
+        }
 
-        # Try to find the bookmark tag
-        if tag_id:
-            bookmark_tag = BookmarkTag.objects.filter(
-                bookmark=bookmark, tag_id=tag_id
-            ).first()
-        else:
-            tag_name = tag_name.lower().strip()
-            bookmark_tag = BookmarkTag.objects.filter(
-                bookmark=bookmark, tag__name=tag_name, tag__user=request.user
-            ).first()
-
-        if not bookmark_tag:
-            return Response(
-                {"detail": "This bookmark does not have this tag"},
-                status=status.HTTP_404_NOT_FOUND,
-            )
-
-        # Delete the bookmark tag
-        bookmark_tag.delete()
-
-        # Return updated bookmark
-        serializer = self.get_serializer(bookmark)
-        return Response(serializer.data)
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    @action(detail=False, methods=["get"])
-    def by_tag(self, request):
-        tag_id = request.query_params.get("tag_id")
-        if tag_id:
-            bookmarks = Bookmark.objects.filter(
-                user=request.user, bookmark_tags__tag_id=tag_id
-            )
-            serializer = self.get_serializer(bookmarks, many=True)
-            return Response(serializer.data)
-        return Response({"error": "Tag ID is required"}, status=400)
+        return Response(stats)
 
 
 class UserViewSet(viewsets.ModelViewSet):
     """API endpoint for user management."""
-
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
 
@@ -286,6 +156,6 @@ class UserViewSet(viewsets.ModelViewSet):
 
     def get_permissions(self):
         """Set custom permissions for different actions."""
-        if self.action == "create":
+        if self.action == 'create':
             return [permissions.AllowAny()]
         return super().get_permissions()

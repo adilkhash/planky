@@ -10,7 +10,7 @@ export interface Bookmark {
   url: string;
   title: string;
   description: string | null;
-  notes: string | null;  // Added notes field
+  notes: string | null;
   favicon_url: string | null;
   created_at: string;
   updated_at: string;
@@ -23,7 +23,7 @@ export interface BookmarkCreateData {
   url: string;
   title: string;
   description?: string;
-  notes?: string;  // Added notes field
+  notes?: string;
   favicon_url?: string;
   is_favorite?: boolean;
   is_pinned?: boolean;
@@ -35,7 +35,7 @@ export interface BookmarkUpdateData {
   url?: string;
   title?: string;
   description?: string;
-  notes?: string;  // Added notes field
+  notes?: string;
   favicon_url?: string;
   is_favorite?: boolean;
   is_pinned?: boolean;
@@ -48,6 +48,18 @@ export interface PaginatedResponse<T> {
   next: string | null;
   previous: string | null;
   results: T[];
+}
+
+export interface BookmarkStats {
+  total_bookmarks: number;
+  favorite_bookmarks: number;
+  pinned_bookmarks: number;
+  total_tags: number;
+  recent_tags: {
+    id: number;
+    name: string;
+    count: number;
+  }[];
 }
 
 export const bookmarkService = {
@@ -75,13 +87,13 @@ export const bookmarkService = {
     await api.delete(`/bookmarks/${id}/`);
   },
 
-  async getFavoriteBookmarks(): Promise<PaginatedResponse<Bookmark>> {
-    const response = await api.get('/bookmarks/favorites/');
+  async getFavoriteBookmarks(params?: Record<string, any>): Promise<PaginatedResponse<Bookmark>> {
+    const response = await api.get('/bookmarks/favorites/', { params });
     return response.data;
   },
 
-  async getPinnedBookmarks(): Promise<PaginatedResponse<Bookmark>> {
-    const response = await api.get('/bookmarks/pinned/');
+  async getPinnedBookmarks(params?: Record<string, any>): Promise<PaginatedResponse<Bookmark>> {
+    const response = await api.get('/bookmarks/pinned/', { params });
     return response.data;
   },
 
@@ -100,8 +112,54 @@ export const bookmarkService = {
     return response.data;
   },
 
-  async getBookmarksByTag(tagId: number): Promise<PaginatedResponse<Bookmark>> {
-    const response = await api.get('/bookmarks/', { params: { tag_id: tagId } });
+  async getBookmarksByTag(tagId: number, params?: Record<string, any>): Promise<PaginatedResponse<Bookmark>> {
+    const queryParams = { tag_id: tagId, ...params };
+    const response = await api.get('/bookmarks/', { params: queryParams });
+    return response.data;
+  },
+
+  // Search-related methods
+
+  async searchBookmarks(
+    query: string,
+    filters?: {
+      tags?: number[];
+      favorite?: boolean;
+      pinned?: boolean;
+    },
+    page = 1
+  ): Promise<PaginatedResponse<Bookmark>> {
+    const params: Record<string, any> = { page };
+
+    if (query) {
+      params.search = query;
+    }
+
+    if (filters?.tags && filters.tags.length > 0) {
+      params.tags = filters.tags.join(',');
+    }
+
+    if (filters?.favorite) {
+      params.is_favorite = true;
+    }
+
+    if (filters?.pinned) {
+      params.is_pinned = true;
+    }
+
+    const response = await api.get('/bookmarks/', { params });
+    return response.data;
+  },
+
+  async getSearchSuggestions(query: string): Promise<string[]> {
+    if (!query || query.length < 2) return [];
+
+    const response = await api.get('/bookmarks/search_suggestions/', { params: { q: query } });
+    return response.data;
+  },
+
+  async getBookmarkStats(): Promise<BookmarkStats> {
+    const response = await api.get('/bookmarks/stats/');
     return response.data;
   }
 };
