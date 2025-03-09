@@ -7,6 +7,7 @@ import RegisterPage from './pages/RegisterPage';
 import BookmarksPage from './pages/BookmarksPage';
 import BookmarkDetailPage from './pages/BookmarkDetailPage';
 import TagsPage from './pages/TagsPage';
+import TagDetailPage from './pages/TagDetailPage.tsx';
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
             <Route path="/bookmarks" element={<BookmarksPage />} />
             <Route path="/bookmarks/:id" element={<BookmarkDetailPage />} />
             <Route path="/tags/" element={<TagsPage />} />
+            <Route path="/tags/:id" element={<TagDetailPage />} />
             {/* Add more protected routes here */}
           </Route>
 
