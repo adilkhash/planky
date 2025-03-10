@@ -1,4 +1,4 @@
-Django>=5.1
+Django==5.1.7
 psycopg2-binary
 djangorestframework
 django-cors-headers
@@ -10,3 +10,4 @@ openai
 tenacity
 beautifulsoup4==4.12.2
 requests
+gunicorn
