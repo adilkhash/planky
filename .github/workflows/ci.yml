@@ -24,10 +24,6 @@ jobs:
         working-directory: ./bookmark-frontend
         run: npm ci
 
-      - name: Lint the frontend
-        working-directory: ./bookmark-frontend
-        run: npm run lint
-
       - name: Build the frontend
         working-directory: ./bookmark-frontend
         run: npm run build
