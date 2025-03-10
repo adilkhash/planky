@@ -43,7 +43,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   useEffect(() => {
     const checkAuth = async () => {
       const token = localStorage.getItem('token');
-      
       if (token) {
         try {
           const response = await api.get('/auth/me/');
@@ -55,7 +54,6 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
           localStorage.removeItem('refreshToken');
         }
       }
-      
       setLoading(false);
     };
 
@@ -70,12 +68,10 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
       const { access, refresh, user: userData } = response.data;
       
       localStorage.setItem('token', access);
-      
       // Only store refresh token if remember me is checked
       if (remember) {
         localStorage.setItem('refreshToken', refresh);
       }
-      
       setUser(userData);
       setIsAuthenticated(true);
     } catch (err: any) {

@@ -34,7 +34,7 @@ const HomePage: React.FC = () => {
           <div className="space-y-6">
             <div className="p-6 bg-white rounded-lg shadow-md">
               <h2 className="text-2xl font-semibold mb-3">
-                Hello, {user?.username || user?.email}!
+                Hello, {user?.username || user?.email || "visitor"}!
               </h2>
               <p className="text-gray-600 mb-4">
                 Manage your bookmarks and stay organized with Planky.
