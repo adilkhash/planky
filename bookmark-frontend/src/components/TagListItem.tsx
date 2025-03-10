@@ -57,7 +57,7 @@ const TagListItem: React.FC<TagListItemProps> = ({
         <div className="flex items-center">
           <button
             onClick={handleTagClick}
-            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors"
+            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-sm font-medium bg-primary-100 text-primary-800 hover:bg-primary-200 transition-colors cursor-pointer"
           >
             {tag.name}
           </button>

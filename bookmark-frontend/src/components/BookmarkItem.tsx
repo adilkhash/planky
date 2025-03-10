@@ -109,7 +109,7 @@ const BookmarkItem: React.FC<BookmarkItemProps> = ({
                 <button
                   key={tag.id}
                   onClick={(e) => handleTagClick(tag.id, e)}
-                  className="inline-block px-2 py-0.5 bg-primary-100 text-primary-800 text-xs rounded-full hover:bg-primary-200 transition-colors"
+                  className="inline-block px-2 py-0.5 bg-primary-100 text-primary-800 text-xs rounded-full hover:bg-primary-200 transition-colors cursor-pointer"
                 >
                   {tag.name}
                 </button>

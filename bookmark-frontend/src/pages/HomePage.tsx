@@ -1,10 +1,24 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import Layout from '../components/Layout';
+import BookmarkModal from '../components/BookmarkModal';
+import { bookmarkService } from '../services/bookmarkService';
 
 const HomePage: React.FC = () => {
   const { isAuthenticated, user } = useAuth();
+  const [showModal, setShowModal] = useState(false);
+
+  // Handle creating a new bookmark
+  const handleCreateBookmark = async (data: any) => {
+    try {
+      await bookmarkService.createBookmark(data);
+      setShowModal(false);
+    } catch (error) {
+      console.error('Error creating bookmark:', error);
+      throw error;
+    }
+  };
 
   return (
     <Layout>
@@ -29,9 +43,12 @@ const HomePage: React.FC = () => {
                 <Link to="/bookmarks" className="btn btn-primary">
                   View Bookmarks
                 </Link>
-                <Link to="/bookmarks/new" className="btn btn-secondary">
+                <button
+                  onClick={() => setShowModal(true)}
+                  className="btn btn-secondary cursor-pointer"
+                >
                   Add New Bookmark
-                </Link>
+                </button>
               </div>
             </div>
 
@@ -110,6 +127,13 @@ const HomePage: React.FC = () => {
             </div>
           </div>
         )}
+
+        {/* Bookmark Modal */}
+        <BookmarkModal
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          onSubmit={handleCreateBookmark}
+        />
       </div>
     </Layout>
   );
