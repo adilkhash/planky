@@ -79,7 +79,7 @@ class LoginSerializer(serializers.Serializer):
         return {
             "email": user.email,
             "user": {
-                "username":  getattr(user, "username", user.email),
+                "username": getattr(user, "username", user.email),
                 "email": user.email,
             },
             "access": str(refresh.access_token),

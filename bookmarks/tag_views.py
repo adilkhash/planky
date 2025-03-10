@@ -279,23 +279,20 @@ class TagViewSet(viewsets.ModelViewSet):
         bookmark_count = BookmarkTag.objects.filter(tag=tag).count()
 
         # Get recent bookmarks using this tag
-        recent_bookmarks = (
-            Bookmark.objects.filter(
-                user=request.user,
-                bookmark_tags__tag=tag
-            )
-            .order_by('-created_at')[:10]
-        )
+        recent_bookmarks = Bookmark.objects.filter(
+            user=request.user, bookmark_tags__tag=tag
+        ).order_by("-created_at")[:10]
 
         from .serializers import BookmarkSerializer
+
         bookmark_serializer = BookmarkSerializer(recent_bookmarks, many=True)
 
         response_data = {
             **tag_data,
-            'statistics': {
-                'total_bookmarks': bookmark_count,
-                'recent_bookmarks': bookmark_serializer.data,
-            }
+            "statistics": {
+                "total_bookmarks": bookmark_count,
+                "recent_bookmarks": bookmark_serializer.data,
+            },
         }
 
         return Response(response_data)

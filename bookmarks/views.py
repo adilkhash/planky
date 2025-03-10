@@ -148,18 +148,17 @@ class BookmarkViewSet(viewsets.ModelViewSet):
 
         return Response(stats)
 
-    @action(detail=False, methods=['post'])
+    @action(detail=False, methods=["post"])
     def fetch_metadata(self, request):
         """
         Fetch metadata from a URL including title and description.
         """
-        url = request.data.get('url')
+        url = request.data.get("url")
         if not url:
             return Response(
-                {'error': 'URL is required'}, 
-                status=status.HTTP_400_BAD_REQUEST
+                {"error": "URL is required"}, status=status.HTTP_400_BAD_REQUEST
             )
-            
+
         metadata = fetch_url_metadata(url)
         return Response(metadata)
 
