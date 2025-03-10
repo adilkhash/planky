@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import BookmarkItem from '../components/BookmarkItem';
-import { Tag, tagService } from '../services/tagService';
+import { TagDetail, tagService } from '../services/tagService';
 import { Bookmark, bookmarkService, PaginatedResponse } from '../services/bookmarkService';
 import { ArrowUturnLeftIcon, PencilIcon, TrashIcon } from '@heroicons/react/24/outline';
 import TagEditModal from '../components/TagEditModal';
@@ -11,7 +11,7 @@ const TagDetailPage: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
 
-  const [tag, setTag] = useState<Tag | null>(null);
+  const [tagDetail, setTagDetail] = useState<TagDetail | null>(null);
   const [bookmarks, setBookmarks] = useState<Bookmark[]>([]);
   const [pagination, setPagination] = useState<PaginatedResponse<Bookmark> | null>(null);
   const [loading, setLoading] = useState(true);
@@ -20,7 +20,7 @@ const TagDetailPage: React.FC = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fetch tag and its bookmarks
+  // Fetch tag details and its bookmarks
   useEffect(() => {
     const fetchTagDetails = async () => {
       if (!id) return;
@@ -30,10 +30,10 @@ const TagDetailPage: React.FC = () => {
         const tagId = parseInt(id);
 
         // Fetch tag details
-        const tagData = await tagService.getTag(tagId);
-        setTag(tagData);
+        const tagDetailData = await tagService.getTagDetail(tagId);
+        setTagDetail(tagDetailData);
 
-        // Fetch bookmarks with this tag
+        // Fetch paginated bookmarks with this tag
         const response = await tagService.getTagBookmarks(tagId);
         setBookmarks(response.results);
         setPagination(response);
@@ -52,7 +52,7 @@ const TagDetailPage: React.FC = () => {
   const handleUpdateTag = async (tagId: number, name: string) => {
     try {
       const updatedTag = await tagService.updateTag(tagId, { name });
-      setTag(updatedTag);
+      setTagDetail(prev => prev ? { ...prev, ...updatedTag } : null);
       setShowEditModal(false);
       return true;
     } catch (error) {
@@ -63,12 +63,12 @@ const TagDetailPage: React.FC = () => {
 
   // Handle deleting a tag
   const handleDeleteTag = async () => {
-    if (!tag) return;
+    if (!tagDetail) return;
 
-    if (window.confirm(`Are you sure you want to delete the tag "${tag.name}"? It will be removed from all bookmarks.`)) {
+    if (window.confirm(`Are you sure you want to delete the tag "${tagDetail.name}"? It will be removed from all bookmarks.`)) {
       setIsDeleting(true);
       try {
-        await tagService.deleteTag(tag.id);
+        await tagService.deleteTag(tagDetail.id);
         navigate('/tags', { replace: true });
       } catch (error) {
         console.error('Error deleting tag:', error);
@@ -126,7 +126,7 @@ const TagDetailPage: React.FC = () => {
     }
   };
 
-  if (loading && !tag) {
+  if (loading && !tagDetail) {
     return (
       <Layout>
         <div className="max-w-6xl mx-auto">
@@ -138,7 +138,7 @@ const TagDetailPage: React.FC = () => {
     );
   }
 
-  if (error || !tag) {
+  if (error || !tagDetail) {
     return (
       <Layout>
         <div className="max-w-6xl mx-auto">
@@ -178,15 +178,15 @@ const TagDetailPage: React.FC = () => {
             <div>
               <h1 className="text-2xl font-bold flex items-center mb-2">
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-lg font-medium bg-primary-100 text-primary-800 mr-2">
-                  {tag.name}
+                  {tagDetail.name}
                 </span>
                 <span className="text-gray-600">
-                  ({bookmarks.length} bookmark{bookmarks.length !== 1 ? 's' : ''})
+                  ({tagDetail.statistics.total_bookmarks} bookmark{tagDetail.statistics.total_bookmarks !== 1 ? 's' : ''})
                 </span>
               </h1>
               <p className="text-gray-600">
-                Created: {new Date(tag.created_at).toLocaleDateString()}
-                {tag.is_ai_generated && (
+                Created: {new Date(tagDetail.created_at).toLocaleDateString()}
+                {tagDetail.is_ai_generated && (
                   <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                     AI Generated
                   </span>
@@ -284,12 +284,14 @@ const TagDetailPage: React.FC = () => {
         )}
 
         {/* Tag edit modal */}
-        <TagEditModal
-          isOpen={showEditModal}
-          onClose={() => setShowEditModal(false)}
-          tag={tag}
-          onSave={handleUpdateTag}
-        />
+        {tagDetail && (
+          <TagEditModal
+            isOpen={showEditModal}
+            onClose={() => setShowEditModal(false)}
+            tag={tagDetail}
+            onSave={handleUpdateTag}
+          />
+        )}
       </div>
     </Layout>
   );

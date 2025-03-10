@@ -1,5 +1,6 @@
 import React from 'react';
 import { formatDistanceToNow } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { Bookmark } from '../services/bookmarkService';
 import {
   PencilIcon,
@@ -27,6 +28,7 @@ const BookmarkItem: React.FC<BookmarkItemProps> = ({
   onTogglePin,
 }) => {
   const [showActions, setShowActions] = React.useState(false);
+  const navigate = useNavigate();
 
   // Format the created date
   const formattedDate = bookmark.created_at
@@ -46,6 +48,13 @@ const BookmarkItem: React.FC<BookmarkItemProps> = ({
     } catch (e) {
       return url;
     }
+  };
+
+  // Handle tag click
+  const handleTagClick = (tagId: number, event: React.MouseEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+    navigate(`/tags/${tagId}/details/`);
   };
 
   return (
@@ -97,12 +106,13 @@ const BookmarkItem: React.FC<BookmarkItemProps> = ({
           {bookmark.tags && bookmark.tags.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
               {bookmark.tags.map((tag) => (
-                <span
+                <button
                   key={tag.id}
-                  className="inline-block px-2 py-0.5 bg-primary-100 text-primary-800 text-xs rounded-full"
+                  onClick={(e) => handleTagClick(tag.id, e)}
+                  className="inline-block px-2 py-0.5 bg-primary-100 text-primary-800 text-xs rounded-full hover:bg-primary-200 transition-colors"
                 >
                   {tag.name}
-                </span>
+                </button>
               ))}
             </div>
           )}

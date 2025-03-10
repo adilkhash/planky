@@ -115,7 +115,7 @@ const TagsPage: React.FC = () => {
 
   // Handle viewing bookmarks with tag
   const handleViewBookmarks = (tagId: number) => {
-    navigate(`/bookmarks?tag_id=${tagId}`);
+    navigate(`/tags/${tagId}/details/`);
   };
 
   // Sort tags

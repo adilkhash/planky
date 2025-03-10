@@ -9,6 +9,13 @@ export interface Tag {
   bookmark_count?: number;
 }
 
+export interface TagDetail extends Tag {
+  statistics: {
+    total_bookmarks: number;
+    recent_bookmarks: Bookmark[];
+  }
+}
+
 export interface TagCreateData {
   name: string;
   is_ai_generated?: boolean;
@@ -69,6 +76,11 @@ export const tagService = {
       source_tag_ids: sourceTagIds,
       target_tag_id: targetTagId
     });
+    return response.data;
+  },
+
+  async getTagDetail(id: number): Promise<TagDetail> {
+    const response = await api.get(`/tags/${id}/details/`);
     return response.data;
   }
 };

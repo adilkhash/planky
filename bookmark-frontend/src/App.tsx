@@ -24,7 +24,7 @@ function App() {
             <Route path="/bookmarks" element={<BookmarksPage />} />
             <Route path="/bookmarks/:id" element={<BookmarkDetailPage />} />
             <Route path="/tags/" element={<TagsPage />} />
-            <Route path="/tags/:id" element={<TagDetailPage />} />
+            <Route path="/tags/:id/details/" element={<TagDetailPage />} />
             {/* Add more protected routes here */}
           </Route>
 

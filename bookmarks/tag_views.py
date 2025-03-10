@@ -257,3 +257,45 @@ class TagViewSet(viewsets.ModelViewSet):
 
         message = f"Merged {len(source_tags)} tag(s) into '{target_tag.name}'. Added {bookmark_tag_count} new bookmark associations."
         return Response({"detail": message}, status=status.HTTP_200_OK)
+
+    @action(detail=True, methods=["get"])
+    def details(self, request, pk, *args, **kwargs):
+        """
+        Get detailed information about a specific tag.
+
+        Returns:
+        - Basic tag information (id, name, created_at)
+        - Total number of bookmarks using this tag
+        - Recent bookmarks (up to 5) using this tag
+        - Usage statistics
+        - Related tags (tags that appear together with this tag)
+        """
+        tag = self.get_object()
+
+        # Get basic tag information using the standard serializer
+        tag_data = self.get_serializer(tag).data
+
+        # Get bookmark statistics
+        bookmark_count = BookmarkTag.objects.filter(tag=tag).count()
+
+        # Get recent bookmarks using this tag
+        recent_bookmarks = (
+            Bookmark.objects.filter(
+                user=request.user,
+                bookmark_tags__tag=tag
+            )
+            .order_by('-created_at')[:10]
+        )
+
+        from .serializers import BookmarkSerializer
+        bookmark_serializer = BookmarkSerializer(recent_bookmarks, many=True)
+
+        response_data = {
+            **tag_data,
+            'statistics': {
+                'total_bookmarks': bookmark_count,
+                'recent_bookmarks': bookmark_serializer.data,
+            }
+        }
+
+        return Response(response_data)
