@@ -28,7 +28,7 @@ jobs:
         working-directory: ./bookmark-frontend
         run: npm run build
         env:
-          VITE_API_URL: https://api.plankyapp.com/
+          VITE_API_URL: https://planky-api.dataeng.ru/
           VITE_ENV: production
 
       - name: Upload frontend build artifacts
