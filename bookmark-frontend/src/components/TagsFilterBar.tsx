@@ -3,7 +3,7 @@ import {
   TagIcon,
   XMarkIcon,
   ChevronDownIcon,
-  FilterIcon
+  FunnelIcon,
 } from '@heroicons/react/24/outline';
 import { Tag, tagService } from '../services/tagService';
 
@@ -73,7 +73,7 @@ const TagsFilterBar: React.FC<TagsFilterBarProps> = ({
           onClick={() => setShowDropdown(true)}
           className="px-3 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 flex items-center"
         >
-          <FilterIcon className="h-5 w-5 mr-2 text-gray-500" />
+          <FunnelIcon className="h-5 w-5 mr-2 text-gray-500" />
           Filter by Tags
         </button>
       </div>

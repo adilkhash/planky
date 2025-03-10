@@ -58,7 +58,7 @@ const RegisterPage: React.FC = () => {
     }),
     onSubmit: async (values) => {
       try {
-        await register(values);
+        await register(values.email, values.username, values.password, values.password_confirm);
         // redirect handled in useEffect
       } catch (err) {
         // Error is handled in AuthContext

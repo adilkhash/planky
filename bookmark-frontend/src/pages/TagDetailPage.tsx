@@ -184,14 +184,6 @@ const TagDetailPage: React.FC = () => {
                   ({tagDetail.statistics.total_bookmarks} bookmark{tagDetail.statistics.total_bookmarks !== 1 ? 's' : ''})
                 </span>
               </h1>
-              <p className="text-gray-600">
-                Created: {new Date(tagDetail.created_at).toLocaleDateString()}
-                {tagDetail.is_ai_generated && (
-                  <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                    AI Generated
-                  </span>
-                )}
-              </p>
             </div>
 
             <div className="flex space-x-2">

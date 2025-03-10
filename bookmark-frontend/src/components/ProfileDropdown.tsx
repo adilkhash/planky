@@ -36,9 +36,7 @@ const ProfileDropdown: React.FC = () => {
 
   // Get user's initials for avatar
   const getInitials = () => {
-    if (user?.first_name && user?.last_name) {
-      return `${user.first_name[0]}${user.last_name[0]}`.toUpperCase();
-    } else if (user?.username) {
+    if (user?.username) {
       return user.username[0].toUpperCase();
     } else if (user?.email) {
       return user.email[0].toUpperCase();
@@ -48,9 +46,7 @@ const ProfileDropdown: React.FC = () => {
 
   // Get display name
   const getDisplayName = () => {
-    if (user?.first_name && user?.last_name) {
-      return `${user.first_name} ${user.last_name}`;
-    } else if (user?.username) {
+    if (user?.username) {
       return user.username;
     } else if (user?.email) {
       return user.email;

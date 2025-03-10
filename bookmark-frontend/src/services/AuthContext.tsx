@@ -140,11 +140,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
           await authService.logout(refreshToken);
         } catch (error) {
-          // Ignore errors on logout request, still clear local tokens
+          // Log the error but continue with local cleanup
           console.error('Logout request failed:', error);
         }
       }
     } finally {
+      // Always clear local tokens and state
       authService.clearTokens();
       setUser(null);
       setLoading(false);

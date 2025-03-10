@@ -20,7 +20,6 @@ const TagListItem: React.FC<TagListItemProps> = ({
   isSelected,
   onToggleSelect
 }) => {
-  const [isHovered, setIsHovered] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const navigate = useNavigate();
 
@@ -42,8 +41,6 @@ const TagListItem: React.FC<TagListItemProps> = ({
   return (
     <li
       className={`flex items-center px-4 py-3 hover:bg-gray-50 ${isSelected ? 'bg-blue-50' : ''}`}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
     >
       <div className="w-8">
         <input

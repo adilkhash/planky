@@ -3,6 +3,9 @@ import api from './api';
 export interface Tag {
   id: number;
   name: string;
+  created_at?: string;
+  is_ai_generated?: boolean;
+  bookmark_count?: number;
 }
 
 export interface Bookmark {

@@ -4,8 +4,8 @@ import { Bookmark, PaginatedResponse } from './bookmarkService';
 export interface Tag {
   id: number;
   name: string;
-  created_at: string;
-  is_ai_generated: boolean;
+  created_at?: string;
+  is_ai_generated?: boolean;
   bookmark_count?: number;
 }
 

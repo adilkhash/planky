@@ -19,9 +19,7 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
   const [fetchingMetadata, setFetchingMetadata] = useState(false);
   const [fetchError, setFetchError] = useState<string | null>(null);
   const [notesCharCount, setNotesCharCount] = useState(initialData?.notes?.length || 0);
-  const [selectedTags, setSelectedTags] = useState<Tag[]>(
-    initialData?.tags || []
-  );
+  const [selectedTags, setSelectedTags] = useState<Tag[]>(initialData?.tags || []);
 
   const formik = useFormik({
     initialValues: {

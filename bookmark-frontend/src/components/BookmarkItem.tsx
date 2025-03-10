@@ -34,13 +34,7 @@ const BookmarkItem: React.FC<BookmarkItemProps> = ({
   const formattedDate = bookmark.created_at
     ? formatDistanceToNow(new Date(bookmark.created_at), { addSuffix: true })
     : '';
-
-  // Truncate long titles and URLs
-  const truncateText = (text: string, maxLength: number) => {
-    if (text.length <= maxLength) return text;
-    return text.substring(0, maxLength) + '...';
-  };
-
+  
   // Extract domain from URL for display
   const getDomain = (url: string) => {
     try {

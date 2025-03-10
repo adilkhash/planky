@@ -98,11 +98,25 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) =>
   };
 
   // Logout function
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    setUser(null);
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (refreshToken) {
+        try {
+          await api.post('/auth/logout/', { refresh: refreshToken });
+        } catch (error) {
+          // Log the error but continue with local cleanup
+          console.error('Logout request failed:', error);
+        }
+      }
+    } finally {
+      // Always clear local tokens and state
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('token');
+      localStorage.removeItem('refreshToken');
+      setUser(null);
+      setIsAuthenticated(false);
+    }
   };
 
   const clearError = () => {

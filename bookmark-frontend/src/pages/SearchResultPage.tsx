@@ -3,7 +3,6 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import SearchBar from '../components/SearchBar';
 import FilterControls from '../components/FilterControls';
-import BookmarkList from '../components/BookmarkList';
 import { MagnifyingGlassIcon, FunnelIcon, ArrowUturnLeftIcon } from '@heroicons/react/24/outline';
 import { bookmarkService, Bookmark, PaginatedResponse } from '../services/bookmarkService';
 import { tagService, Tag } from '../services/tagService';

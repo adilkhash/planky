@@ -93,7 +93,7 @@ const EnhancedTagInput: React.FC<EnhancedTagInputProps> = ({
 
     if (existingTag || isExistingTag) {
       // Add existing tag
-      const tagToAdd = existingTag || { name: trimmedName };
+      const tagToAdd = existingTag || { id: -Date.now(), name: trimmedName };
       onChange([...selectedTags, tagToAdd]);
       setTagInput('');
       setError(null);

@@ -3,7 +3,6 @@ import { bookmarkService, Bookmark, PaginatedResponse } from '../services/bookma
 import BookmarkItem from './BookmarkItem';
 import { PlusIcon, ArrowPathIcon, AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline';
 import BookmarkModal from './BookmarkModal';
-import { Tag } from '../services/tagService';
 
 interface BookmarkListProps {
   tagFilter?: number | null;
