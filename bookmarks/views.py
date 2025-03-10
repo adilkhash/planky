@@ -1,4 +1,4 @@
-from rest_framework import viewsets, filters, permissions
+from rest_framework import viewsets, filters, permissions, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -9,6 +9,7 @@ from .models import Bookmark, Tag
 from .serializers import BookmarkSerializer, UserSerializer
 from .permissions import IsOwner
 from .filters import BookmarkFilter
+from .services import fetch_url_metadata
 
 User = get_user_model()
 
@@ -146,6 +147,21 @@ class BookmarkViewSet(viewsets.ModelViewSet):
         }
 
         return Response(stats)
+
+    @action(detail=False, methods=['post'])
+    def fetch_metadata(self, request):
+        """
+        Fetch metadata from a URL including title and description.
+        """
+        url = request.data.get('url')
+        if not url:
+            return Response(
+                {'error': 'URL is required'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        metadata = fetch_url_metadata(url)
+        return Response(metadata)
 
 
 class UserViewSet(viewsets.ModelViewSet):

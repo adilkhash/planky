@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useFormik } from 'formik';
 import * as Yup from 'yup';
-import { Bookmark } from '../services/bookmarkService';
+import { Bookmark, bookmarkService } from '../services/bookmarkService';
 import { Tag } from '../services/tagService';
 import EnhancedTagInput from './EnhancedTagInput';
 
@@ -82,34 +82,24 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
     setFetchError(null);
 
     try {
-      // Here, you would normally call an API endpoint to fetch metadata
-      // For now, we'll simulate a request with a timeout
-      // In a real implementation, you would call a server endpoint that uses
-      // a library like metascraper or open-graph-scraper to fetch the metadata
+      const metadata = await bookmarkService.fetchUrlMetadata(url);
 
-      // Simulated API call for demo purposes
-      setTimeout(() => {
-        // This would actually be the result from your API
-        const metadata = {
-          title: 'Example Page Title',
-          description: 'This is a sample description that would be extracted from the page metadata.',
-          favicon: 'https://example.com/favicon.ico'
-        };
+      if (metadata.error) {
+        setFetchError(metadata.error);
+        return;
+      }
 
-        // Only set values if they're not already set by the user
-        if (!formik.values.title) {
-          formik.setFieldValue('title', metadata.title);
-        }
-        if (!formik.values.description) {
-          formik.setFieldValue('description', metadata.description);
-        }
-
-        setFetchingMetadata(false);
-      }, 1000);
-
+      // Only set values if they're not already set by the user
+      if (!formik.values.title && metadata.title) {
+        formik.setFieldValue('title', metadata.title);
+      }
+      if (!formik.values.description && metadata.description) {
+        formik.setFieldValue('description', metadata.description);
+      }
     } catch (error) {
       console.error('Error fetching metadata:', error);
       setFetchError('Failed to fetch page metadata. Please enter details manually.');
+    } finally {
       setFetchingMetadata(false);
     }
   };

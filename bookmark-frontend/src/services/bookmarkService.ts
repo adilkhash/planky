@@ -65,6 +65,13 @@ export interface BookmarkStats {
   }[];
 }
 
+interface UrlMetadata {
+  title: string | null;
+  description: string | null;
+  url: string;
+  error?: string;
+}
+
 export const bookmarkService = {
   async getBookmarks(params?: Record<string, any>): Promise<PaginatedResponse<Bookmark>> {
     const response = await api.get('/bookmarks/', { params });
@@ -163,6 +170,11 @@ export const bookmarkService = {
 
   async getBookmarkStats(): Promise<BookmarkStats> {
     const response = await api.get('/bookmarks/stats/');
+    return response.data;
+  },
+
+  async fetchUrlMetadata(url: string): Promise<UrlMetadata> {
+    const response = await api.post('/bookmarks/fetch_metadata/', { url });
     return response.data;
   }
 };
