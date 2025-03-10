@@ -1,0 +1,72 @@
+name: Planky CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:
+
+jobs:
+  build-frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+          cache-dependency-path: bookmark-frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: ./bookmark-frontend
+        run: npm ci
+
+      - name: Lint the frontend
+        working-directory: ./bookmark-frontend
+        run: npm run lint
+
+      - name: Build the frontend
+        working-directory: ./bookmark-frontend
+        run: npm run build
+        env:
+          VITE_API_URL: https://api.plankyapp.com/
+          VITE_ENV: production
+
+      - name: Upload frontend build artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: frontend-build
+          path: bookmark-frontend/dist/
+          retention-days: 1
+
+  deploy:
+    needs: [build-frontend]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v3
+        with:
+          name: frontend-build
+          path: frontend-build
+
+      - name: Set up SSH key
+        uses: webfactory/ssh-agent@v0.7.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H ${{ secrets.SERVER_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy frontend
+        run: |
+          ssh ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} "mkdir -p ~/planky-app/frontend"
+          rsync -avz frontend-build/ ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }}:~/planky-app/frontend/
