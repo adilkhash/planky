@@ -56,7 +56,7 @@ const LoginPage: React.FC = () => {
         );
         // redirect handled in useEffect
       } catch (err) {
-        // Error is handled in AuthContext
+        formik.setErrors({email: "Failed to log in using provided credentials"})
       }
     },
   });
