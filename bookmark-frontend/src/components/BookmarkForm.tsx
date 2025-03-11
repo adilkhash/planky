@@ -96,7 +96,7 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
         await formik.setValues(values);
       }
       if (!formik.values.description && metadata.description) {
-        values= {...values, description: metadata.description}
+        values = {...values, description: metadata.description};
         await formik.setValues(values);
       }
 
