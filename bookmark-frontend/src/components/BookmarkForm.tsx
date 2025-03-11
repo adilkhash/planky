@@ -88,12 +88,18 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
         setFetchError(metadata.error);
         return;
       }
-      if (!formik.values.description && metadata.description) {
-        await formik.setValues({...formik.values, description: metadata.description});
-      }
+
+      let values = {...formik.values};
+
       if (!formik.values.title && metadata.title) {
-        await formik.setValues({...formik.values, title: metadata.title});
+        values = {...values, title: metadata.title}
+        await formik.setValues(values);
       }
+      if (!formik.values.description && metadata.description) {
+        values= {...values, description: metadata.description}
+        await formik.setValues(values);
+      }
+
     } catch (error) {
       console.error('Error fetching metadata:', error);
       setFetchError('Failed to fetch page metadata. Please enter details manually.');
