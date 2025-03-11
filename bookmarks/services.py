@@ -5,7 +5,7 @@ import re
 from typing import Dict, Optional
 
 
-def fetch_url_metadata(url: str) -> Dict[str, Optional[str]]:
+def fetch_url_metadata(url: str) -> dict[str, Optional[str]]:
     """
     Fetch metadata from a URL including title and description.
 
@@ -18,7 +18,10 @@ def fetch_url_metadata(url: str) -> Dict[str, Optional[str]]:
     try:
         # Add headers to mimic a browser request
         headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+            )
         }
 
         # Make the request with a timeout
@@ -47,8 +50,8 @@ def fetch_url_metadata(url: str) -> Dict[str, Optional[str]]:
         elif soup.find("meta", property="og:description"):
             description = soup.find("meta", property="og:description")["content"]
         # Try Twitter description
-        elif soup.find("meta", name="twitter:description"):
-            description = soup.find("meta", name="twitter:description")["content"]
+        elif soup.find("meta", property="twitter:description"):
+            description = soup.find("meta", property="twitter:description")["content"]
         # Fallback to first paragraph
         else:
             first_p = soup.find("p")
