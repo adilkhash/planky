@@ -88,13 +88,11 @@ const BookmarkForm: React.FC<BookmarkFormProps> = ({
         setFetchError(metadata.error);
         return;
       }
-
-      // Only set values if they're not already set by the user
-      if (!formik.values.title && metadata.title) {
-        formik.setFieldValue('title', metadata.title);
-      }
       if (!formik.values.description && metadata.description) {
-        formik.setFieldValue('description', metadata.description);
+        await formik.setValues({...formik.values, description: metadata.description});
+      }
+      if (!formik.values.title && metadata.title) {
+        await formik.setValues({...formik.values, title: metadata.title});
       }
     } catch (error) {
       console.error('Error fetching metadata:', error);
