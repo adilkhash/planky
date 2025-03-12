@@ -32,11 +32,6 @@ export const tagService = {
     return response.data.results;
   },
 
-  async getTag(id: number): Promise<Tag> {
-    const response = await api.get(`/tags/${id}/`);
-    return response.data;
-  },
-
   async createTag(data: TagCreateData): Promise<Tag> {
     const response = await api.post('/tags/', data);
     return response.data;

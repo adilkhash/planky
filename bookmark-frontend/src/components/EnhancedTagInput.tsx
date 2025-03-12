@@ -117,7 +117,8 @@ const EnhancedTagInput: React.FC<EnhancedTagInputProps> = ({
         // Update available tags
         setAvailableTags(prevTags => [...prevTags, newTag]);
       } catch (error) {
-        setError('Failed to create tag. Please try again. Info:' + error);
+        setError('Failed to create tag. Please try again.');
+        console.log(error);
         // Remove the temporary tag on error
         onChange(selectedTags.filter(tag => tag.name !== trimmedName));
       } finally {
