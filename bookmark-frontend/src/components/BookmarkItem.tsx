@@ -77,7 +77,7 @@ const BookmarkItem: React.FC<BookmarkItemProps> = ({
 
         {/* Content */}
         <div className="flex-grow min-w-0">
-          <h3 className="text-lg font-medium text-gray-900 mb-1 truncate">
+          <h3 className="text-lg font-medium text-gray-900 mb-1">
             {bookmark.title}
           </h3>
 
