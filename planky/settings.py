@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 from dotenv import load_dotenv
+from datetime import timedelta
 
 # Load environment variables
 load_dotenv()
@@ -136,7 +137,9 @@ CORS_ALLOWED_ORIGINS = os.getenv(
     "http://localhost:3000,http://127.0.0.1:3000,http://localhost:5173",
 ).split(",")
 CORS_ALLOW_CREDENTIALS = True
-CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000").split(",")
+CSRF_TRUSTED_ORIGINS = os.getenv(
+    "CSRF_TRUSTED_ORIGINS", "http://localhost:3000,http://127.0.0.1:3000"
+).split(",")
 
 # REST Framework settings
 REST_FRAMEWORK = {
@@ -158,7 +161,6 @@ REST_FRAMEWORK = {
 }
 
 # JWT settings
-from datetime import timedelta
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=1),

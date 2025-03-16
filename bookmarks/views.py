@@ -156,7 +156,8 @@ class BookmarkViewSet(viewsets.ModelViewSet):
         url = request.data.get("url")
         if not url:
             return Response(
-                {"error": "URL is required"}, status=status.HTTP_400_BAD_REQUEST,
+                {"error": "URL is required"},
+                status=status.HTTP_400_BAD_REQUEST,
             )
 
         metadata = fetch_url_metadata(url)
